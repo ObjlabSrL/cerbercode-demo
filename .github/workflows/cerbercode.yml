@@ -35,11 +35,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Serve solo se il package GHCR e' privato. Con un package pubblico questo
-      # passo viene saltato, e il repository resta clonabile ed eseguibile da
-      # chiunque senza credenziali.
-      - name: Autenticazione GHCR (solo se il package e' privato)
-        if: ${{ env.GHCR_TOKEN != '' }}
+      # Il segreto manca finche' qualcuno non lo imposta, e senza non si scarica
+      # niente. Meglio dirlo qui, in una riga leggibile, che lasciar fallire un
+      # `docker pull` venti righe piu' sotto con «unauthorized»: chi arriva su
+      # questo repository e vede rosso deve capire in tre secondi che manca una
+      # configurazione, non che il prodotto non funzioni.
+      - name: Il repository e' configurato?
+        if: ${{ env.GHCR_TOKEN == '' }}
+        run: |
+          echo "::error::Manca il segreto GHCR_TOKEN. L'immagine di Cerbercode sta su un registry privato: senza credenziali di lettura questo repository non puo' eseguire la dimostrazione. Vedi il README, sezione «Stato»."
+          {
+            echo "### Dimostrazione non configurata"
+            echo ""
+            echo "Manca il segreto \`GHCR_TOKEN\`. Non e' un difetto del prodotto:"
+            echo "l'immagine di Cerbercode sta su un registry privato, perche' e'"
+            echo "software commerciale, e serve un token di sola lettura per"
+            echo "scaricarla."
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      # Serve perche' il package GHCR e' privato: Cerbercode e' un prodotto
+      # commerciale e l'immagine non e' pubblica. Il token ha il solo permesso
+      # di *leggere* i package, e i segreti non sono accessibili ai fork ne'
+      # alle pull request esterne.
+      - name: Autenticazione GHCR
         run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
 
       - name: Scarica Cerbercode

@@ -9,6 +9,19 @@ vedete non sono stati caricati a mano: li produce il workflow
 [`cerbercode.yml`](.github/workflows/cerbercode.yml) a ogni push, usando
 l'immagine pubblicata di Cerbercode e nient'altro.
 
+## Stato
+
+> **Il workflow è rosso, e non perché il prodotto non funzioni.**
+>
+> Cerbercode è software commerciale: la sua immagine sta su un registry privato,
+> e per scaricarla serve un token di sola lettura. Finché il segreto
+> `GHCR_TOKEN` non è impostato su questo repository, il workflow si ferma alla
+> prima riga con un messaggio esplicito invece di provarci.
+>
+> Il codice del workflow è comunque leggibile per intero, ed è metà del punto:
+> mostra esattamente quante righe servono per mettere Cerbercode in una
+> pipeline GitHub.
+
 ## Che cosa c'è dentro
 
 Quattro mini-progetti **deliberatamente vulnerabili**, uno per famiglia di
