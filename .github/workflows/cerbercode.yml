@@ -1,0 +1,96 @@
+name: Cerbercode
+
+# La dimostrazione e' il workflow stesso: chi legge questo file vede esattamente
+# come Cerbercode entra in una pipeline GitHub, e i risultati nella scheda
+# Security sono quelli che produce.
+#
+# Il code scanning di GitHub e' gratuito sui repository pubblici e richiede
+# Advanced Security su quelli privati. Il repository di sviluppo di Cerbercode
+# e' privato, quindi l'integrazione non poteva essere mostrata li'.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    # Una volta a settimana: le vulnerabilita' delle dipendenze cambiano anche
+    # quando il codice non cambia, ed e' una delle cose che il prodotto fa.
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write   # scrittura nella scheda Security
+  actions: read
+
+jobs:
+  scansione:
+    name: Analizza i campioni e pubblica i risultati
+    runs-on: ubuntu-latest
+    env:
+      IMMAGINE: ghcr.io/objlabsrl/cerbercode/backend:1.0.0
+      # Letto in un `env` e non direttamente in `if`: il contesto `secrets` non
+      # e' garantito nelle condizioni di passo, e una condizione che non valuta
+      # salta il passo in silenzio.
+      GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Serve solo se il package GHCR e' privato. Con un package pubblico questo
+      # passo viene saltato, e il repository resta clonabile ed eseguibile da
+      # chiunque senza credenziali.
+      - name: Autenticazione GHCR (solo se il package e' privato)
+        if: ${{ env.GHCR_TOKEN != '' }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Scarica Cerbercode
+        run: |
+          set -euo pipefail
+          if ! docker pull "$IMMAGINE"; then
+            echo "::error::Immagine non scaricabile. Se il package GHCR e' privato serve il segreto GHCR_TOKEN; altrimenti va reso pubblico."
+            exit 1
+          fi
+
+      - name: Scansione
+        run: |
+          set -euo pipefail
+          # Scrivibile da chiunque perche' l'immagine gira come utente non-root
+          # (uid 1001), che non e' l'utente del runner.
+          mkdir -p cerbercode-out && chmod 777 cerbercode-out
+
+          # Il repository e' montato in SOLA LETTURA. Non e' un dettaglio di
+          # comodo: uno scanner che scrive nel codice che analizza sporca il
+          # risultato e puo' rompere una build. Questa riga lo dimostra invece
+          # di prometterlo.
+          #
+          # `--entrypoint python` perche' l'entrypoint dell'immagine e' la
+          # sequenza di avvio del servizio (attesa del database e migrazioni),
+          # che qui non serve.
+          docker run --rm \
+            -v "${{ github.workspace }}:/scan:ro" \
+            -v "${{ github.workspace }}/cerbercode-out:/out" \
+            --entrypoint python \
+            "$IMMAGINE" \
+            -m src.cli scan /scan --output-dir /out
+
+      - name: Che cosa ha trovato
+        if: ${{ always() && hashFiles('cerbercode-out/findings.json') != '' }}
+        run: python .github/riepilogo.py >> "$GITHUB_STEP_SUMMARY"
+
+      # Il passo per cui esiste questo repository.
+      - uses: github/codeql-action/upload-sarif@v3
+        if: ${{ always() && hashFiles('cerbercode-out/report.sarif') != '' }}
+        with:
+          sarif_file: cerbercode-out/report.sarif
+          category: cerbercode
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ always() && hashFiles('cerbercode-out/findings.json') != '' }}
+        with:
+          name: cerbercode-risultati
+          path: cerbercode-out
+          retention-days: 30
+
+      # Nessuna soglia che fa fallire il job: questi progetti SONO vulnerabili
+      # per costruzione, e un controllo permanentemente rosso smette di essere
+      # un segnale. In una pipeline vera la soglia si imposta; qui il punto e'
+      # mostrare i risultati, non bloccare niente.

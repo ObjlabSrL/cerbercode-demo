@@ -1,0 +1,4 @@
+# Versioni con CVE note: pip-audit deve produrre più finding.
+Django==2.2.0
+PyYAML==5.1
+requests==2.19.0
