@@ -14,7 +14,7 @@ l'immagine pubblicata di Cerbercode e nient'altro.
 Il repository esegue l'immagine **pubblicata** di Cerbercode, non il codice di
 sviluppo. È una scelta: dimostra ciò che un cliente riceve davvero.
 
-La versione fissata qui è `1.0.1`.
+La versione fissata qui è `1.0.2`.
 
 > **A cosa è servito, la prima volta.** Con la `1.0.0` la scheda Security
 > restava vuota: l'immagine produceva un SARIF che GitHub rifiutava per intero,
