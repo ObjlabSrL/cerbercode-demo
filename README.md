@@ -11,16 +11,18 @@ l'immagine pubblicata di Cerbercode e nient'altro.
 
 ## Stato
 
-> **Il workflow è rosso, e non perché il prodotto non funzioni.**
+Il repository esegue l'immagine **pubblicata** di Cerbercode, non il codice di
+sviluppo. È una scelta: dimostra ciò che un cliente riceve davvero.
+
+> **Perché la scheda Security è ancora vuota.** La versione fissata qui —
+> `1.0.0` — produce un SARIF che GitHub rifiuta, per una proprietà fuori
+> schema. Il difetto è corretto sul ramo principale ma non ancora rilasciato,
+> quindi finché non esce una `1.0.1` la scansione gira e i risultati restano
+> negli artefatti dell'esecuzione, senza comparire nella scheda Security.
 >
-> Cerbercode è software commerciale: la sua immagine sta su un registry privato,
-> e per scaricarla serve un token di sola lettura. Finché il segreto
-> `GHCR_TOKEN` non è impostato su questo repository, il workflow si ferma alla
-> prima riga con un messaggio esplicito invece di provarci.
->
-> Il codice del workflow è comunque leggibile per intero, ed è metà del punto:
-> mostra esattamente quante righe servono per mettere Cerbercode in una
-> pipeline GitHub.
+> Lo si è scoperto proprio così: questo repository esegue l'artefatto
+> pubblicato, e ha mostrato che l'artefatto era indietro rispetto al codice.
+> È metà della ragione per cui esiste.
 
 ## Che cosa c'è dentro
 

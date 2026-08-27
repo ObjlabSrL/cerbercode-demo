@@ -89,7 +89,7 @@ jobs:
             -v "${{ github.workspace }}/cerbercode-out:/out" \
             --entrypoint python \
             "$IMMAGINE" \
-            -m src.cli scan /scan --output-dir /out
+            -m src.cli scan /scan --output-dir /out --fail-on none
 
       - name: Che cosa ha trovato
         if: ${{ always() && hashFiles('cerbercode-out/findings.json') != '' }}
@@ -109,7 +109,13 @@ jobs:
           path: cerbercode-out
           retention-days: 30
 
-      # Nessuna soglia che fa fallire il job: questi progetti SONO vulnerabili
-      # per costruzione, e un controllo permanentemente rosso smette di essere
-      # un segnale. In una pipeline vera la soglia si imposta; qui il punto e'
+      # Su `--fail-on none`, che prima mancava.
+      #
+      # Questo commento diceva gia' «nessuna soglia che fa fallire il job», ma
+      # la soglia non era stata disattivata: la CLI usava il suo predefinito
+      # (`high`) e usciva 1 su progetti che sono vulnerabili **per costruzione**.
+      # Il workflow falliva facendo esattamente cio' per cui esiste.
+      #
+      # E' il difetto che si scrive quando si documenta l'intenzione invece di
+      # verificarla. In una pipeline vera la soglia si imposta; qui il punto e'
       # mostrare i risultati, non bloccare niente.
