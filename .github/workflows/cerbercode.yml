@@ -27,7 +27,7 @@ jobs:
     name: Analizza i campioni e pubblica i risultati
     runs-on: ubuntu-latest
     env:
-      IMMAGINE: ghcr.io/objlabsrl/cerbercode/backend:1.0.2
+      IMMAGINE: ghcr.io/objlabsrl/cerbercode/backend:1.0.3
       # Letto in un `env` e non direttamente in `if`: il contesto `secrets` non
       # e' garantito nelle condizioni di passo, e una condizione che non valuta
       # salta il passo in silenzio.
