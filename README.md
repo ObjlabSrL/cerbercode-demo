@@ -14,15 +14,19 @@ l'immagine pubblicata di Cerbercode e nient'altro.
 Il repository esegue l'immagine **pubblicata** di Cerbercode, non il codice di
 sviluppo. È una scelta: dimostra ciò che un cliente riceve davvero.
 
-> **Perché la scheda Security è ancora vuota.** La versione fissata qui —
-> `1.0.0` — produce un SARIF che GitHub rifiuta, per una proprietà fuori
-> schema. Il difetto è corretto sul ramo principale ma non ancora rilasciato,
-> quindi finché non esce una `1.0.1` la scansione gira e i risultati restano
-> negli artefatti dell'esecuzione, senza comparire nella scheda Security.
+La versione fissata qui è `1.0.1`.
+
+> **A cosa è servito, la prima volta.** Con la `1.0.0` la scheda Security
+> restava vuota: l'immagine produceva un SARIF che GitHub rifiutava per intero,
+> e tre scanner tentavano di scrivere nella cartella analizzata — montata in
+> sola lettura, come fa la configurazione di produzione.
 >
-> Lo si è scoperto proprio così: questo repository esegue l'artefatto
-> pubblicato, e ha mostrato che l'artefatto era indietro rispetto al codice.
-> È metà della ragione per cui esiste.
+> Erano difetti già corretti nel codice ma non ancora rilasciati. Fra «corretto
+> nel sorgente» e «corretto in ciò che il cliente ha» c'era un rilascio di
+> distanza, e nient'altro lo misurava: la CI verifica il sorgente, il self-scan
+> verifica il repository, e nessuno verificava l'artefatto consegnato.
+>
+> Questo repository lo fa, ed è metà della ragione per cui esiste.
 
 ## Che cosa c'è dentro
 
